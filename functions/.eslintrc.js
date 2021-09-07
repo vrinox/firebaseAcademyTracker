@@ -18,7 +18,7 @@ module.exports = {
     sourceType: "module",
   },
   ignorePatterns: [
-    "/src/interfaces.ts",
+    "/src/models/*.ts",
     "/lib/**/*", // Ignore built files.
   ],
   plugins: [
