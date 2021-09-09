@@ -10,7 +10,7 @@ const getScholarsStory = functions.https.onRequest(async (req, res) => {
   res.send(result);
 });
 
-const updateScholarData = functions.pubsub.schedule("0 0 * * 1-7").onRun(async () => {
+const updateScholarData = functions.pubsub.schedule("0 0 * * 1-7").timeZone("Europe/London").onRun(async () => {
   let dbScholars:any = await getCurrentData();
   getScholarsOfficialData(dbScholars)
       .then((scholarsNewData:Scholar[])=>{
