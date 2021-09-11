@@ -19,6 +19,7 @@ const createHistoricData = (scholars: Scholar[]) => {
   scholars.forEach((scholar: Scholar) => {
     const childRef = dbRef.push();
     scholar.todaySLP = scholar.yesterdaySLP;
+    scholar.lastUpdate = new Date();
     scholar.yesterdaySLP = 0;
     childRef.set(scholar.getValues());
   });
