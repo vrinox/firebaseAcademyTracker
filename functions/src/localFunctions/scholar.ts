@@ -7,11 +7,14 @@ const REST_API_SERVER = "https://api.lunaciaproxy.cloud";
 
 const getCurrentData = async () => {
   let scholars: Scholar[] = [];
-  const snapshot =  await admin.firestore().collection("scholars").get();
+  const snapshot = await admin.firestore().collection("scholars").get();
   scholars = await getData(scholars, snapshot);
   return scholars;
 };
-const getData = (scholars: Scholar[], snapshot:FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData>): Promise<Scholar[]> => {
+const getData = (
+    scholars: Scholar[],
+    snapshot:FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData>
+): Promise<Scholar[]> => {
   return new Promise((resolve) => {
     snapshot.forEach((doc:FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => {
       scholars.push(new Scholar(doc.data()));
@@ -38,10 +41,10 @@ const getScholarsOfficialData = (dbScholars: any): Promise<Scholar[]> => {
 const updateDB = (scholars: Scholar[]) => {
   const dbRef = admin.firestore().collection("scholars");
   scholars.forEach(async (scholar: Scholar) => {
-    let snapshot = await dbRef.where("roninAddress", "==", scholar.roninAddress).get()
+    const snapshot = await dbRef.where("roninAddress", "==", scholar.roninAddress).get();
     snapshot.forEach((doc)=>{
       doc.ref.update(scholar.getValues());
-    })
+    });
   });
 };
 

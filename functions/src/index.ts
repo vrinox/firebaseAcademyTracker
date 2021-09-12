@@ -29,9 +29,10 @@ const updateScholarData = functions.pubsub.schedule("0 0 * * 1-7").timeZone("Eur
 
 const addNewScholar = functions.https.onRequest( (req, res) => {
   cors(req, res, async ()=> {
-    await addScholar(req.body);
+    const docRef = await addScholar(req.body);
     res.send({
       "success": true,
+      "id": docRef.id,
     });
   });
 });

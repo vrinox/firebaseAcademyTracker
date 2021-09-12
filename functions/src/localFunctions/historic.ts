@@ -2,13 +2,14 @@ import * as admin from "firebase-admin";
 import {Scholar} from "../models/scholar";
 
 const getHistoric = (): Promise<Scholar[]> => {
-  return new Promise(async (resolve) => {
-    const snapshot = await admin.firestore().collection("historic").get();
-    const historic: Scholar[] = [];
-    snapshot.docs.map((doc)=>{
-      historic.push(new Scholar(doc.data()));
-    })
-    resolve(historic);
+  return new Promise((resolve) => {
+    admin.firestore().collection("historic").get().then((snapshot)=>{
+      const historic: Scholar[] = [];
+      snapshot.docs.map((doc)=>{
+        historic.push(new Scholar(doc.data()));
+      });
+      resolve(historic);
+    });
   });
 };
 
