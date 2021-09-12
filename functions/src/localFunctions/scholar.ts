@@ -1,43 +1,30 @@
-import {Reference} from "@firebase/database-types";
 import * as admin from "firebase-admin";
 import * as request from "request-promise-native";
-import {scholarOfficialData} from "../models/interfaces";
+import {scholarOfficialData, earningsData, statsData} from "../models/interfaces";
 import {Scholar} from "../models/scholar";
+
+const REST_API_SERVER = "https://api.lunaciaproxy.cloud";
 
 const getCurrentData = async () => {
   let scholars: Scholar[] = [];
-  const ref = admin.database().ref().child("scholars");
-  scholars = await getData(scholars, ref);
+  const snapshot =  await admin.firestore().collection("scholars").get();
+  scholars = await getData(scholars, snapshot);
   return scholars;
 };
-const getData = (scholars:Scholar[], ref:Reference):Promise<Scholar[]> => {
-  return new Promise((resolve)=>{
-    ref.orderByValue().on("value", (snapshot) => {
-      snapshot.forEach((data) => {
-        scholars.push(new Scholar(data.val()));
-      });
-      resolve(scholars);
+const getData = (scholars: Scholar[], snapshot:FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData>): Promise<Scholar[]> => {
+  return new Promise((resolve) => {
+    snapshot.forEach((doc:FirebaseFirestore.QueryDocumentSnapshot<FirebaseFirestore.DocumentData>) => {
+      scholars.push(new Scholar(doc.data()));
     });
+    resolve(scholars);
   });
 };
-const getOfficialData = (scholar: Scholar): Promise<scholarOfficialData> => {
-  const options = {
-    uri: `https://api.lunaciarover.com/stats/${scholar.roninAddress}`,
-    json: true,
-  };
-  return new Promise((resolve)=>{
-    request.get(options).then((result:scholarOfficialData)=>{
-      resolve(result);
-    });
-  });
-};
-
 const getScholarsOfficialData = (dbScholars: any): Promise<Scholar[]> => {
-  return new Promise((resolve)=>{
-    Promise.all(dbScholars.map( (scholar: Scholar) => {
+  return new Promise((resolve) => {
+    Promise.all(dbScholars.map((scholar: Scholar) => {
       return getOfficialData(scholar);
     }))
-        .then((newScholarOfficialData: any[])=>{
+        .then((newScholarOfficialData: any[]) => {
           const scholarsNewData: any = newScholarOfficialData.map((officialData: scholarOfficialData) => {
             const scholarNewData = new Scholar();
             scholarNewData.parse(officialData);
@@ -49,12 +36,12 @@ const getScholarsOfficialData = (dbScholars: any): Promise<Scholar[]> => {
 };
 
 const updateDB = (scholars: Scholar[]) => {
-  const dbRef = admin.database().ref().child("scholars");
-  let cont = 0;
-  scholars.forEach((scholar: Scholar) => {
-    const childRef = dbRef.child(cont.toString());
-    childRef.set(scholar.getValues());
-    cont++;
+  const dbRef = admin.firestore().collection("scholars");
+  scholars.forEach(async (scholar: Scholar) => {
+    let snapshot = await dbRef.where("roninAddress", "==", scholar.roninAddress).get()
+    snapshot.forEach((doc)=>{
+      doc.ref.update(scholar.getValues());
+    })
   });
 };
 
@@ -74,13 +61,62 @@ const updateLocalScholars = (dbScholars: Scholar[], scholarsNewData: Scholar[]) 
 
 const calculateMonthlyRank = (updatedScholars: Scholar[]) => {
   let rank = 1;
-  const rankedScholars = updatedScholars.sort( (scholarA:Scholar, scholarB:Scholar) => {
+  const rankedScholars = updatedScholars.sort((scholarA: Scholar, scholarB: Scholar) => {
     return scholarB.monthSLP - scholarA.monthSLP;
-  }).map((scholar:Scholar)=>{
+  }).map((scholar: Scholar) => {
     scholar.mounthlyRank = rank;
     rank++;
     return scholar;
   });
   return rankedScholars;
 };
+
+const getOfficialData = async (scholar: Scholar): Promise<scholarOfficialData> => {
+  const Allstats: any = {};
+  [Allstats.stats, Allstats.earnings] = await Promise.all(
+      [
+        getStats(scholar.roninAddress),
+        getEarnings(scholar.roninAddress),
+      ]
+  );
+  const apiData: scholarOfficialData = parseData(Allstats.earnings, Allstats.stats, scholar.roninAddress);
+  return apiData;
+};
+
+const getStats = (roninAddres: string): Promise<any> => {
+  const options = {
+    uri: `${REST_API_SERVER}/_stats/${roninAddres}`,
+    json: true,
+  };
+  return new Promise((resolve) => {
+    request.get(options).then((result: scholarOfficialData) => {
+      resolve(result);
+    });
+  });
+};
+const getEarnings = (roninAddres: string): Promise<any> => {
+  const options = {
+    uri: `${REST_API_SERVER}/_earnings/${roninAddres}`,
+    json: true,
+  };
+  return new Promise((resolve) => {
+    request.get(options).then((result: scholarOfficialData) => {
+      resolve(result);
+    });
+  });
+};
+
+const parseData = (earnings: earningsData, stats: statsData, roninAddress: string) => {
+  return {
+    ronin_address: roninAddress,
+    ronin_slp: earnings.slp_holdings,
+    total_slp: earnings.slp_in_total,
+    in_game_slp: earnings.slp_inventory,
+    rank: stats.rank,
+    mmr: stats.elo,
+    total_matches: stats.win_total,
+    ign: stats.name,
+  };
+};
+
 export {getCurrentData, updateDB, updateLocalScholars, getScholarsOfficialData};

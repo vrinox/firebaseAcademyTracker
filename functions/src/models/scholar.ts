@@ -17,6 +17,7 @@ export class Scholar {
   lastMonthSLP: number = 0;
   lastUpdate: Date = new Date;
   WinRate!: string;
+  personalAddress?: string;
 
   constructor(values: Object = {}) {
     Object.assign(this, values);
@@ -28,7 +29,6 @@ export class Scholar {
     this.inGameSLP = unParsedData.in_game_slp;
     this.PVPRank = unParsedData.rank;
     this.MMR = unParsedData.mmr;
-    this.WinRate = unParsedData.win_rate;
     return this;
   }
   getValues():object {

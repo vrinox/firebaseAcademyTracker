@@ -1,14 +1,19 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import {getHistoric, createHistoricData} from "./localFunctions/historic";
+import {createHistoricData} from "./localFunctions/historic";
+import {addScholar, getUserAddress} from "./localFunctions/users";
 import {getCurrentData, updateDB, updateLocalScholars, getScholarsOfficialData} from "./localFunctions/scholar";
 import {Scholar} from "./models/scholar";
+import * as corsModule from "cors";
+const cors = corsModule({
+  origin: true,
+});
 admin.initializeApp();
 
-const getScholarsStory = functions.https.onRequest(async (req, res) => {
-  const result = await getHistoric();
-  res.send(result);
-});
+// const getScholarsStory = functions.https.onRequest(async (req, res) => {
+//   const result = await getHistoric();
+//   res.send(result);
+// });
 
 const updateScholarData = functions.pubsub.schedule("0 0 * * 1-7").timeZone("Europe/London").onRun(async () => {
   let dbScholars:any = await getCurrentData();
@@ -22,4 +27,24 @@ const updateScholarData = functions.pubsub.schedule("0 0 * * 1-7").timeZone("Eur
   return null;
 });
 
-export {updateScholarData, getScholarsStory};
+const addNewScholar = functions.https.onRequest( (req, res) => {
+  cors(req, res, async ()=> {
+    await addScholar(req.body);
+    res.send({
+      "success": true,
+    });
+  });
+});
+
+const getUserRoninAddress = functions.https.onRequest( (req, res) => {
+  cors(req, res, async ()=> {
+    getUserAddress(req.body.uid).then((address)=>{
+      res.send({
+        "success": true,
+        "address": address,
+      });
+    });
+  });
+});
+
+export {updateScholarData, addNewScholar, getUserRoninAddress};

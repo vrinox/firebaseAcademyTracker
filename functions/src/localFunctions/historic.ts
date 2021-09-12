@@ -2,26 +2,23 @@ import * as admin from "firebase-admin";
 import {Scholar} from "../models/scholar";
 
 const getHistoric = (): Promise<Scholar[]> => {
-  return new Promise((resolve) => {
-    const refHistoric = admin.database().ref("historic");
+  return new Promise(async (resolve) => {
+    const snapshot = await admin.firestore().collection("historic").get();
     const historic: Scholar[] = [];
-    refHistoric.orderByValue().on("value", (snapshot) => {
-      snapshot.forEach((data) => {
-        historic.push(data.val());
-      });
-      resolve(historic);
-    });
+    snapshot.docs.map((doc)=>{
+      historic.push(new Scholar(doc.data()));
+    })
+    resolve(historic);
   });
 };
 
 const createHistoricData = (scholars: Scholar[]) => {
-  const dbRef = admin.database().ref().child("historic");
+  const dbRef = admin.firestore().collection("historic");
   scholars.forEach((scholar: Scholar) => {
-    const childRef = dbRef.push();
     scholar.todaySLP = scholar.yesterdaySLP;
     scholar.lastUpdate = new Date();
     scholar.yesterdaySLP = 0;
-    childRef.set(scholar.getValues());
+    dbRef.add(scholar.getValues());
   });
 };
 
