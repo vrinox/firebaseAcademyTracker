@@ -122,4 +122,17 @@ const parseData = (earnings: earningsData, stats: statsData, roninAddress: strin
   };
 };
 
-export {getCurrentData, updateDB, updateLocalScholars, getScholarsOfficialData};
+const getScholar = async (roninAddres: string): Promise<Scholar> =>{
+  const dbRef = admin.firestore().collection("userLink");
+  return new Promise((resolve, reject) => {
+    dbRef.where("roninAddress", "==", roninAddres)
+        .get()
+        .then((snapshot)=>{
+          snapshot.forEach((doc)=>{
+            resolve(new Scholar(doc.data()));
+          });
+        });
+  });
+};
+
+export {getCurrentData, updateDB, updateLocalScholars, getScholarsOfficialData, getScholar};

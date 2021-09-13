@@ -17,6 +17,7 @@ export interface scholarFirebaseI {
 export interface userLink{
   roninAddress: string;
   uid: string;
+  avatar: string;
 }
 export interface statsData{
   client_id:string,

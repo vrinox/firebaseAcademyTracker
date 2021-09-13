@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import {createHistoricData} from "./localFunctions/historic";
-import {addScholar, getUserAddress} from "./localFunctions/users";
+import {addScholar, addNewUserLink, getAllAppUserData} from "./localFunctions/users";
 import {getCurrentData, updateDB, updateLocalScholars, getScholarsOfficialData} from "./localFunctions/scholar";
 import {Scholar} from "./models/scholar";
 import * as corsModule from "cors";
@@ -37,15 +37,24 @@ const addNewScholar = functions.https.onRequest( (req, res) => {
   });
 });
 
-const getUserRoninAddress = functions.https.onRequest( (req, res) => {
+const addUserLink = functions.https.onRequest( (req, res) => {
   cors(req, res, async ()=> {
-    getUserAddress(req.body.uid).then((address)=>{
-      res.send({
-        "success": true,
-        "address": address,
-      });
+    const docRef = await addNewUserLink(req.body);
+    res.send({
+      "success": true,
+      "userLinkId": docRef.id,
     });
   });
 });
 
-export {updateScholarData, addNewScholar, getUserRoninAddress};
+const getAppUserData = functions.https.onRequest( (req, res) => {
+  cors(req, res, async ()=> {
+    const userData = await getAllAppUserData(req.body.uid);
+    res.send({
+      "success": true,
+      "userData": userData,
+    });
+  });
+});
+
+export {updateScholarData, addNewScholar, addUserLink, getAppUserData};
