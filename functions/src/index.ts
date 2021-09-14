@@ -1,10 +1,11 @@
 import * as functions from "firebase-functions";
+import * as corsModule from "cors";
 import * as admin from "firebase-admin";
 import {createHistoricData} from "./localFunctions/historic";
 import {addScholar, addNewUserLink, getAllAppUserData} from "./localFunctions/users";
-import {getCurrentData, updateDB, updateLocalScholars, getScholarsOfficialData} from "./localFunctions/scholar";
+import {getAllScholarsFRomDB, updateDB, updateLocalScholars} from "./localFunctions/scholar";
 import {Scholar} from "./models/scholar";
-import * as corsModule from "cors";
+import {getScholarsOfficialData} from "./localFunctions/officialData";
 const cors = corsModule({
   origin: true,
 });
@@ -16,7 +17,7 @@ admin.initializeApp();
 // });
 
 const updateScholarData = functions.pubsub.schedule("0 0 * * 1-7").timeZone("Europe/London").onRun(async () => {
-  let dbScholars:any = await getCurrentData();
+  let dbScholars:any = await getAllScholarsFRomDB();
   getScholarsOfficialData(dbScholars)
       .then((scholarsNewData:Scholar[])=>{
         dbScholars = updateLocalScholars(dbScholars, scholarsNewData);

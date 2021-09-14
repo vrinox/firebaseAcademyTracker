@@ -24,12 +24,12 @@ export class Scholar {
   }
   parse(unParsedData: scholarOfficialData) {
     this.roninAddress = unParsedData.ronin_address;
-    this.inRoninSLP = unParsedData.ronin_slp;
-    this.totalSLP = unParsedData.total_slp;
-    this.inGameSLP = unParsedData.in_game_slp;
-    this.PVPRank = unParsedData.rank;
-    this.MMR = unParsedData.mmr;
-    this.name = this.name ? this.name : unParsedData.ign;
+    this.inRoninSLP = (isNaN(unParsedData.ronin_slp)) ? 0 : unParsedData.ronin_slp;
+    this.totalSLP = (isNaN(unParsedData.total_slp)) ? 0 : unParsedData.total_slp;
+    this.inGameSLP = (isNaN(unParsedData.in_game_slp)) ? 0 : unParsedData.in_game_slp;
+    this.PVPRank = (isNaN(unParsedData.rank)) ? 0 : unParsedData.rank;
+    this.MMR = (isNaN(unParsedData.mmr)) ? 0 : unParsedData.mmr;
+    this.name = (this.name)? this.name : unParsedData.ign;
     return this;
   }
   getValues():object {
@@ -50,11 +50,10 @@ export class Scholar {
     }
   }
   update(newData: Scholar):void {
-    const diffDays = this.getDaysDiffStartOfMonth();
     this.todaySLP = 0;
-    this.yesterdaySLP = newData.totalSLP - this.totalSLP;
-    this.monthSLP = this.monthSLP + this.yesterdaySLP;
-    this.averageSLP = this.monthSLP / diffDays;
+    this.yesterdaySLP = this.calculateYesterdaySLP(newData);
+    this.monthSLP = this.calculateMonthSLP();
+    this.averageSLP = this.calculateAverageSLP();
     this.lastUpdate = new Date(moment().startOf("day").toString());
     this.MMR = newData.MMR;
     this.PVPRank = newData.PVPRank;
@@ -66,5 +65,18 @@ export class Scholar {
     const startOfTheMonth = moment().startOf("month");
     const today = moment();
     return today.diff(startOfTheMonth, "days");
+  }
+  calculateYesterdaySLP(newData: Scholar){
+    return (newData.totalSLP < this.totalSLP)? newData.totalSLP: newData.totalSLP - this.totalSLP;
+  }
+  calculateMonthSLP(){
+    if(this.getDaysDiffStartOfMonth() == 0 || this.totalSLP == 0){
+      return 0;
+    } else {
+      return this.monthSLP + this.yesterdaySLP;
+    }
+  }
+  calculateAverageSLP(){
+    return this.monthSLP / this.getDaysDiffStartOfMonth();
   }
 }
