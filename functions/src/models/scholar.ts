@@ -3,7 +3,7 @@ import {scholarOfficialData} from "./interfaces";
 export class Scholar {
   id!: number;
   roninAddress: string = "";
-  name!: string;
+  name: string = "";
   todaySLP: number = 0;
   yesterdaySLP: number = 0;
   MMR: number = 0;
@@ -29,6 +29,7 @@ export class Scholar {
     this.inGameSLP = unParsedData.in_game_slp;
     this.PVPRank = unParsedData.rank;
     this.MMR = unParsedData.mmr;
+    this.name = this.name ? this.name : unParsedData.ign;
     return this;
   }
   getValues():object {

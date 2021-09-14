@@ -123,12 +123,13 @@ const parseData = (earnings: earningsData, stats: statsData, roninAddress: strin
 };
 
 const getScholar = async (roninAddres: string): Promise<Scholar> =>{
-  const dbRef = admin.firestore().collection("userLink");
+  const dbRef = admin.firestore().collection("scholars");
   return new Promise((resolve, reject) => {
     dbRef.where("roninAddress", "==", roninAddres)
         .get()
         .then((snapshot)=>{
           snapshot.forEach((doc)=>{
+            console.log(doc.data());
             resolve(new Scholar(doc.data()));
           });
         });
