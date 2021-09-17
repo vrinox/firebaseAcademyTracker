@@ -15,7 +15,7 @@ export class Scholar {
   mounthlyRank: number = 0;
   monthSLP: number = 0;
   lastMonthSLP: number = 0;
-  lastUpdate: Date = new Date;
+  lastUpdate: Date = new Date(moment().startOf("day").toString());
   WinRate!: string;
   personalAddress?: string;
 
@@ -46,7 +46,8 @@ export class Scholar {
       mounthlyRank: this.mounthlyRank || 0,
       monthSLP: this.monthSLP || 0,
       lastMonthSLP: this.lastMonthSLP || 0,
-      PVPRank: this.PVPRank || 0
+      PVPRank: this.PVPRank || 0,
+      lastUpdate: this.lastUpdate
     }
   }
   update(newData: Scholar):void {

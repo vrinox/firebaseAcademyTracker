@@ -33,7 +33,7 @@ const updateDB = (scholars: Scholar[]) => {
 const updateLocalScholars = (dbScholars: Scholar[], scholarsNewData: Scholar[]) => {
   let updatedScholars = dbScholars.map((scholar: Scholar) => {
     const scholarNewData = scholarsNewData.find((newData: Scholar) => {
-      return newData.roninAddress == scholar.roninAddress;
+      return newData.roninAddress === scholar.roninAddress;
     });
     if (scholarNewData) {
       scholar.update(scholarNewData);
@@ -53,7 +53,6 @@ const calculateMonthlyRank = (updatedScholars: Scholar[]) => {
     rank++;
     return scholar;
   });
-  console.log("rank", JSON.stringify(rankedScholars));
   return rankedScholars;
 };
 
