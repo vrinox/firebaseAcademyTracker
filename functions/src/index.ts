@@ -2,10 +2,11 @@ import * as functions from "firebase-functions";
 import * as corsModule from "cors";
 import * as admin from "firebase-admin";
 import {createHistoricData} from "./localFunctions/historic";
-import {addScholar, addNewUserLink, getAllAppUserData} from "./localFunctions/users";
+import {addScholar} from "./localFunctions/users";
 import {getAllScholarsFRomDB, updateDB, updateLocalScholars} from "./localFunctions/scholar";
 import {Scholar} from "./models/scholar";
 import {getScholarsOfficialData} from "./localFunctions/officialData";
+import moment = require("moment");
 const cors = corsModule({
   origin: true,
 });
@@ -16,14 +17,14 @@ admin.initializeApp();
 //   res.send(result);
 // });
 
-const updateScholarData = functions.pubsub.schedule("0 0 * * 1-7").timeZone("Europe/London").onRun(async () => {
+const updateScholarData = functions.pubsub.schedule("59 0 * * 0-6").timeZone("Europe/London").onRun(async () => {
   let dbScholars:any = await getAllScholarsFRomDB();
   getScholarsOfficialData(dbScholars)
       .then((scholarsNewData:Scholar[])=>{
         dbScholars = updateLocalScholars(dbScholars, scholarsNewData);
         updateDB(dbScholars);
         createHistoricData(dbScholars);
-        console.log("the Update was done successfuly");
+        console.log("the Update was done successfuly", moment().format());
       });
   return null;
 });
@@ -38,24 +39,4 @@ const addNewScholar = functions.https.onRequest( (req, res) => {
   });
 });
 
-const addUserLink = functions.https.onRequest( (req, res) => {
-  cors(req, res, async ()=> {
-    const docRef = await addNewUserLink(req.body);
-    res.send({
-      "success": true,
-      "userLinkId": docRef.id,
-    });
-  });
-});
-
-const getAppUserData = functions.https.onRequest( (req, res) => {
-  cors(req, res, async ()=> {
-    const userData = await getAllAppUserData(req.body.uid);
-    res.send({
-      "success": true,
-      "userData": userData,
-    });
-  });
-});
-
-export {updateScholarData, addNewScholar, addUserLink, getAppUserData};
+export {updateScholarData, addNewScholar};
