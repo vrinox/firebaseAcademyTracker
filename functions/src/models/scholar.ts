@@ -18,6 +18,8 @@ export class Scholar {
   lastUpdate: Date = new Date(moment().startOf("day").toString());
   WinRate!: string;
   personalAddress?: string;
+  weekSLP: number = 0;
+  lastWeekSLP: number = 0;
 
   constructor(values: Object = {}) {
     Object.assign(this, values);
@@ -52,8 +54,9 @@ export class Scholar {
   }
   update(newData: Scholar):void {
     this.todaySLP = 0;
-    this.yesterdaySLP = this.calculateYesterdaySLP(newData);
+    this.yesterdaySLP = this.calculateYesterdaySLP(newData);    
     this.monthSLP = this.calculateMonthSLP();
+    this.weekSLP = this.calculateWeekSLP();
     this.averageSLP = this.calculateAverageSLP();
     this.lastUpdate = new Date(moment().startOf("day").toString());
     this.MMR = newData.MMR;
@@ -62,8 +65,8 @@ export class Scholar {
     this.inRoninSLP = newData.inRoninSLP;
     this.totalSLP = newData.totalSLP;
   }
-  getDaysDiffStartOfMonth():number {
-    const startOfTheMonth = moment().startOf("month");
+  getDaysDiffStartOf(valor:any):number {
+    const startOfTheMonth = moment().startOf(valor);
     const today = moment();
     return today.diff(startOfTheMonth, "days");
   }
@@ -71,13 +74,22 @@ export class Scholar {
     return (newData.totalSLP < this.totalSLP)? newData.totalSLP: newData.totalSLP - this.totalSLP;
   }
   calculateMonthSLP(){
-    if(this.getDaysDiffStartOfMonth() == 0 || this.totalSLP == 0){
+    if(this.getDaysDiffStartOf('month') == 0 || this.totalSLP == 0){
+      this.lastMonthSLP = this.monthSLP;
       return 0;
     } else {
       return this.monthSLP + this.yesterdaySLP;
     }
   }
+  calculateWeekSLP(){
+    if(this.getDaysDiffStartOf('week') == 0 || this.totalSLP == 0){
+      this.lastWeekSLP = this.lastWeekSLP;
+      return 0;
+    } else {
+      return this.weekSLP + this.yesterdaySLP;
+    }
+  }
   calculateAverageSLP(){
-    return this.monthSLP / this.getDaysDiffStartOfMonth();
+    return this.monthSLP / this.getDaysDiffStartOf('month');
   }
 }
