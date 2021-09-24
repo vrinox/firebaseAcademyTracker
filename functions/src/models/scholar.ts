@@ -20,6 +20,7 @@ export class Scholar {
   personalAddress?: string;
   weekSLP: number = 0;
   lastWeekSLP: number = 0;
+  tempYesterday: number = 0;
 
   constructor(values: Object = {}) {
     Object.assign(this, values);
@@ -53,8 +54,9 @@ export class Scholar {
     }
   }
   update(newData: Scholar):void {
+    this.tempYesterday = this.todaySLP;
     this.todaySLP = 0;
-    this.yesterdaySLP = this.calculateYesterdaySLP(newData);    
+    this.yesterdaySLP = this.calculateYesterdaySLP(newData);
     this.monthSLP = this.calculateMonthSLP();
     this.weekSLP = this.calculateWeekSLP();
     this.averageSLP = this.calculateAverageSLP();
@@ -74,7 +76,7 @@ export class Scholar {
     return (newData.totalSLP < this.totalSLP)? newData.totalSLP: newData.totalSLP - this.totalSLP;
   }
   calculateMonthSLP(){
-    if(this.getDaysDiffStartOf('month') == 0 || this.totalSLP == 0){
+    if(this.getDaysDiffStartOf('month') === 0 || this.totalSLP === 0){
       this.lastMonthSLP = this.monthSLP;
       return 0;
     } else {

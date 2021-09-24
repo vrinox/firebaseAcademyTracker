@@ -12,11 +12,6 @@ const cors = corsModule({
 });
 admin.initializeApp();
 
-// const getScholarsStory = functions.https.onRequest(async (req, res) => {
-//   const result = await getHistoric();
-//   res.send(result);
-// });
-
 const updateScholarData = functions.pubsub.schedule("59 0 * * 0-6").timeZone("Europe/London").onRun(async () => {
   let dbScholars:any = await getAllScholarsFRomDB();
   getScholarsOfficialData(dbScholars)
