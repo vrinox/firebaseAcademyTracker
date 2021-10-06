@@ -21,6 +21,7 @@ export class Scholar {
   weekSLP: number = 0;
   lastWeekSLP: number = 0;
   tempYesterday: number = 0;
+  comunity: string[] = [];
 
   constructor(values: Object = {}) {
     Object.assign(this, values);
@@ -50,6 +51,7 @@ export class Scholar {
       monthSLP: this.monthSLP || 0,
       lastMonthSLP: this.lastMonthSLP || 0,
       PVPRank: this.PVPRank || 0,
+      weekSLP: this.weekSLP || 0,
       lastUpdate: this.lastUpdate
     }
   }
@@ -78,7 +80,7 @@ export class Scholar {
   calculateMonthSLP(){
     if(this.getDaysDiffStartOf('month') === 0 || this.totalSLP === 0){
       this.lastMonthSLP = this.monthSLP;
-      return 0;
+      return this.yesterdaySLP;
     } else {
       return this.monthSLP + this.yesterdaySLP;
     }
@@ -86,7 +88,7 @@ export class Scholar {
   calculateWeekSLP(){
     if(this.getDaysDiffStartOf('week') == 0 || this.totalSLP == 0){
       this.lastWeekSLP = this.lastWeekSLP;
-      return 0;
+      return this.yesterdaySLP;
     } else {
       return this.weekSLP + this.yesterdaySLP;
     }
