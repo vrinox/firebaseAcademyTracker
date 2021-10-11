@@ -56,42 +56,47 @@ export class Scholar {
     }
   }
   update(newData: Scholar):void {
+    let today = this.calculateYesterdaySLP(newData.totalSLP, this.totalSLP);
+    let monthAcumulated = this.calculateMonthAcc(today, this.monthSLP);
+    let weekAccumulated = this.calculateWeekAcc(today, this.weekSLP);
+    
     this.tempYesterday = this.todaySLP;
     this.todaySLP = 0;
-    this.yesterdaySLP = this.calculateYesterdaySLP(newData);
-    this.monthSLP = this.calculateMonthSLP();
-    this.weekSLP = this.calculateWeekSLP();
+    this.yesterdaySLP = today;
+    this.monthSLP = monthAcumulated;
+    this.weekSLP = weekAccumulated;
     this.averageSLP = this.calculateAverageSLP();
     this.lastUpdate = new Date(moment().startOf("day").toString());
+
     this.MMR = newData.MMR;
     this.PVPRank = newData.PVPRank;
     this.inGameSLP = newData.inGameSLP;
     this.inRoninSLP = newData.inRoninSLP;
     this.totalSLP = newData.totalSLP;
+
+    console.log(`${this.name} hizo en el [dia]: ${today}slp, lleva acumulado en la [semana]: ${weekAccumulated}slp y en el [mes]: ${monthAcumulated}slp`,this.lastUpdate.toISOString());
   }
   getDaysDiffStartOf(valor:any):number {
     const startOfTheMonth = moment().startOf(valor);
     const today = moment();
     return today.diff(startOfTheMonth, "days");
   }
-  calculateYesterdaySLP(newData: Scholar){
-    return (newData.totalSLP < this.totalSLP)? newData.totalSLP: newData.totalSLP - this.totalSLP;
+  calculateYesterdaySLP(newTotal: number, oldTotal: number){
+    return (newTotal < oldTotal)? newTotal: newTotal - oldTotal;
   }
-  calculateMonthSLP(){
-    if(this.getDaysDiffStartOf('month') === 0 || this.totalSLP === 0){
+  calculateMonthAcc(todaySLP: number, monthAcumulated: number){    
+    if(this.getDaysDiffStartOf('month') === 0){
       this.lastMonthSLP = this.monthSLP;
-      return this.yesterdaySLP;
-    } else {
-      return this.monthSLP + this.yesterdaySLP;
+      monthAcumulated = 0;
     }
+    return monthAcumulated + todaySLP;
   }
-  calculateWeekSLP(){
-    if(this.getDaysDiffStartOf('week') == 0 || this.totalSLP == 0){
-      this.lastWeekSLP = this.lastWeekSLP;
-      return this.yesterdaySLP;
-    } else {
-      return this.weekSLP + this.yesterdaySLP;
+  calculateWeekAcc(todaySLP: number, weekAccumulated: number){
+    if(this.getDaysDiffStartOf('week') === 0){
+      this.lastWeekSLP = this.weekSLP;
+      weekAccumulated = 0;
     }
+    return weekAccumulated + todaySLP;
   }
   calculateAverageSLP(){
     return this.monthSLP / this.getDaysDiffStartOf('month');
