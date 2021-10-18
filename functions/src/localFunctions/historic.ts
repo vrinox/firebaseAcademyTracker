@@ -1,4 +1,5 @@
 import * as admin from "firebase-admin";
+import moment = require("moment");
 import {Scholar} from "../models/scholar";
 
 const getHistoric = (): Promise<Scholar[]> => {
@@ -19,6 +20,10 @@ const createHistoricData = (scholars: Scholar[]) => {
     scholar.todaySLP = scholar.yesterdaySLP;
     scholar.lastUpdate = new Date();
     scholar.yesterdaySLP = scholar.tempYesterday;
+    console.log(
+        `${moment().format("DD/MM/YYYY")}[HISTORIC] ${scholar.name}`,
+        scholar.getValues()
+    );
     dbRef.add(scholar.getValues());
   });
 };

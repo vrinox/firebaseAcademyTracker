@@ -1,5 +1,5 @@
 import moment = require("moment");
-import {scholarOfficialData} from "./interfaces";
+import { scholarOfficialData } from "./interfaces";
 export class Scholar {
   id!: number;
   roninAddress: string = "";
@@ -33,10 +33,10 @@ export class Scholar {
     this.inGameSLP = (isNaN(unParsedData.in_game_slp)) ? 0 : unParsedData.in_game_slp;
     this.PVPRank = (isNaN(unParsedData.rank)) ? 0 : unParsedData.rank;
     this.MMR = (isNaN(unParsedData.mmr)) ? 0 : unParsedData.mmr;
-    this.name = (this.name)? this.name : unParsedData.ign;
+    this.name = (this.name) ? this.name : unParsedData.ign;
     return this;
   }
-  getValues():object {
+  getValues(): object {
     return {
       roninAddress: this.roninAddress,
       name: this.name,
@@ -55,12 +55,14 @@ export class Scholar {
       lastUpdate: this.lastUpdate
     }
   }
-  update(newData: Scholar):void {
-    let today = this.calculateYesterdaySLP(newData.totalSLP, this.totalSLP);
-    let monthAcumulated = this.calculateMonthAcc(today, this.monthSLP);
-    let weekAccumulated = this.calculateWeekAcc(today, this.weekSLP);
-    
-    this.tempYesterday = this.todaySLP;
+  update(newData: Scholar): void {
+    let oldData: any = this.getValues();
+
+    let today = this.calculateYesterdaySLP(newData.inGameSLP, oldData.inGameSLP);
+    let monthAcumulated = this.calculateMonthAcc(today, oldData.monthSLP);
+    let weekAccumulated = this.calculateWeekAcc(today, oldData.weekSLP);
+
+    this.tempYesterday = oldData.todaySLP;
     this.todaySLP = 0;
     this.yesterdaySLP = today;
     this.monthSLP = monthAcumulated;
@@ -74,31 +76,35 @@ export class Scholar {
     this.inRoninSLP = newData.inRoninSLP;
     this.totalSLP = newData.totalSLP;
 
-    console.log(`${this.name} hizo en el [dia]: ${today}slp, lleva acumulado en la [semana]: ${weekAccumulated}slp y en el [mes]: ${monthAcumulated}slp`,this.lastUpdate.toISOString());
+    console.log(`
+        [SCHOLAR] ${this.name} [dia]: ${today}slp, [semana]: ${weekAccumulated}slp [mes]: ${monthAcumulated}slp [old-inGame] ${oldData.inGameSLP} [new-inGame] ${newData.inGameSLP}`);
+    console.log(`${moment().format('DD/MM/YYYY')}[SCHOLAR][OLD] ${this.name}`, JSON.stringify(oldData));
+    console.log(`${moment().format('DD/MM/YYYY')}[SCHOLAR][NEW] ${this.name}`, JSON.stringify(newData));
+    console.log(`${moment().format('DD/MM/YYYY')}[SCHOLAR][RESULT] ${this.name}`, this.getValues());
   }
-  getDaysDiffStartOf(valor:any):number {
+  getDaysDiffStartOf(valor: any): number {
     const startOfTheMonth = moment().startOf(valor);
     const today = moment();
     return today.diff(startOfTheMonth, "days");
   }
-  calculateYesterdaySLP(newTotal: number, oldTotal: number){
-    return (newTotal < oldTotal)? newTotal: newTotal - oldTotal;
+  calculateYesterdaySLP(newTotal: number, oldTotal: number) {
+    return (newTotal < oldTotal) ? newTotal : newTotal - oldTotal;
   }
-  calculateMonthAcc(todaySLP: number, monthAcumulated: number){    
-    if(this.getDaysDiffStartOf('month') === 0){
+  calculateMonthAcc(todaySLP: number, monthAcumulated: number) {
+    if (this.getDaysDiffStartOf('month') === 0) {
       this.lastMonthSLP = this.monthSLP;
       monthAcumulated = 0;
     }
     return monthAcumulated + todaySLP;
   }
-  calculateWeekAcc(todaySLP: number, weekAccumulated: number){
-    if(this.getDaysDiffStartOf('week') === 0){
+  calculateWeekAcc(todaySLP: number, weekAccumulated: number) {
+    if (this.getDaysDiffStartOf('week') === 0) {
       this.lastWeekSLP = this.weekSLP;
       weekAccumulated = 0;
     }
     return weekAccumulated + todaySLP;
   }
-  calculateAverageSLP(){
+  calculateAverageSLP() {
     return this.monthSLP / this.getDaysDiffStartOf('month');
   }
 }
