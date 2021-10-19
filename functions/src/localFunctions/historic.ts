@@ -22,7 +22,7 @@ const createHistoricData = (scholars: Scholar[]) => {
     scholar.yesterdaySLP = scholar.tempYesterday;
     console.log(
         `${moment().format("DD/MM/YYYY")}[HISTORIC] ${scholar.name}`,
-        scholar.getValues()
+        JSON.stringify(scholar.getValues())
     );
     dbRef.add(scholar.getValues());
   });

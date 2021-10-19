@@ -76,11 +76,10 @@ export class Scholar {
     this.inRoninSLP = newData.inRoninSLP;
     this.totalSLP = newData.totalSLP;
 
-    console.log(`
-        [SCHOLAR] ${this.name} [dia]: ${today}slp, [semana]: ${weekAccumulated}slp [mes]: ${monthAcumulated}slp [old-inGame] ${oldData.inGameSLP} [new-inGame] ${newData.inGameSLP}`);
+    console.log(`[SCHOLAR] ${this.name} [dia]: ${today}slp, [semana]: ${weekAccumulated}slp [mes]: ${monthAcumulated}slp [old-inGame] ${oldData.inGameSLP} [new-inGame] ${newData.inGameSLP}`);
     console.log(`${moment().format('DD/MM/YYYY')}[SCHOLAR][OLD] ${this.name}`, JSON.stringify(oldData));
     console.log(`${moment().format('DD/MM/YYYY')}[SCHOLAR][NEW] ${this.name}`, JSON.stringify(newData));
-    console.log(`${moment().format('DD/MM/YYYY')}[SCHOLAR][RESULT] ${this.name}`, this.getValues());
+    console.log(`${moment().format('DD/MM/YYYY')}[SCHOLAR][RESULT] ${this.name}`, JSON.stringify(this.getValues()));
   }
   getDaysDiffStartOf(valor: any): number {
     const startOfTheMonth = moment().startOf(valor);
