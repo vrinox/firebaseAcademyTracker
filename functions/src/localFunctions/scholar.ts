@@ -1,6 +1,6 @@
 import * as admin from "firebase-admin";
+import moment = require("moment");
 import {Scholar} from "../models/scholar";
-
 
 const getAllScholarsFRomDB = async () => {
   let scholars: Scholar[] = [];
@@ -19,17 +19,23 @@ const parseDocsToClassScholar = (
     resolve(scholars);
   });
 };
-
-const updateDB = (scholars: Scholar[]) => {
+const updateDB = async (scholars: Scholar[]):Promise<Scholar[]> => {
   const dbRef = admin.firestore().collection("scholars");
-  scholars.forEach(async (scholar: Scholar) => {
-    const snapshot = await dbRef.where("roninAddress", "==", scholar.roninAddress).get();
-    snapshot.forEach((doc)=>{
-      doc.ref.update(scholar.getValues());
-    });
-  });
+  const result = await Promise.all(scholars.map( (scholar) => updateOneScholar(scholar, dbRef)));
+  console.log("final promesas");
+  return result;
 };
-
+const updateOneScholar = async (
+    scholar: Scholar,
+    dbRef: FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>
+) => {
+  const insertData:any = scholar.getValues();
+  insertData.todaySLP = 0;
+  const snapshot = await dbRef.where("roninAddress", "==", scholar.roninAddress).get();
+  await snapshot.docs[0].ref.update(insertData);
+  console.log("scholar", scholar.name);
+  return scholar;
+};
 const updateLocalScholars = (dbScholars: Scholar[], scholarsNewData: Scholar[]) => {
   let updatedScholars = dbScholars.map((scholar: Scholar) => {
     const scholarNewData = scholarsNewData.find((newData: Scholar) => {
@@ -43,7 +49,6 @@ const updateLocalScholars = (dbScholars: Scholar[], scholarsNewData: Scholar[]) 
   updatedScholars = calculateMonthlyRank(updatedScholars);
   return updatedScholars;
 };
-
 const calculateMonthlyRank = (updatedScholars: Scholar[]) => {
   let rank = 1;
   const rankedScholars = updatedScholars.sort((scholarA: Scholar, scholarB: Scholar) => {
@@ -55,8 +60,6 @@ const calculateMonthlyRank = (updatedScholars: Scholar[]) => {
   });
   return rankedScholars;
 };
-
-
 const getScholar = async (roninAddres: string): Promise<Scholar> =>{
   const dbRef = admin.firestore().collection("scholars");
   return new Promise((resolve, reject) => {
@@ -64,11 +67,28 @@ const getScholar = async (roninAddres: string): Promise<Scholar> =>{
         .get()
         .then((snapshot)=>{
           snapshot.forEach((doc)=>{
-            console.log(doc.data());
             resolve(new Scholar(doc.data()));
           });
         });
   });
 };
+const cleanSharedBattles = async () => {
+  const snapShot = await admin.firestore().collection("sharedBattles").get();
+  const promiseArray: Promise<any>[] = [];
+  snapShot.forEach( async (doc)=>{
+    const date = doc.data().creationDate.toDate();
+    const controlDate = getControlDate();
+    if (date <= controlDate) {
+      promiseArray.push(doc.ref.delete());
+    }
+  });
 
-export {getAllScholarsFRomDB, updateDB, updateLocalScholars, getScholar};
+  const result = await Promise.all(promiseArray);
+  return result;
+};
+const getControlDate = (): any =>{
+  const controlDate = moment();
+  controlDate.subtract(7, "days");
+  return controlDate;
+};
+export {getAllScholarsFRomDB, updateDB, updateLocalScholars, getScholar, cleanSharedBattles};

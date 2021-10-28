@@ -14,18 +14,22 @@ const getHistoric = (): Promise<Scholar[]> => {
   });
 };
 
-const createHistoricData = (scholars: Scholar[]) => {
+const createHistoricData = async (scholars: Scholar[]) => {
   const dbRef = admin.firestore().collection("historic");
-  scholars.forEach((scholar: Scholar) => {
-    scholar.todaySLP = scholar.yesterdaySLP;
-    scholar.lastUpdate = new Date();
-    scholar.yesterdaySLP = scholar.tempYesterday;
+  const promiseArray: Promise<any>[] = [];
+  scholars.forEach(async (scholar: Scholar) => {
+    const insertData:any = scholar.getValues();
+    insertData.todaySLP = scholar.yesterdaySLP;
+    insertData.lastUpdate = new Date();
+    insertData.yesterdaySLP = scholar.tempYesterday;
     console.log(
         `${moment().format("DD/MM/YYYY")}[HISTORIC] ${scholar.name}`,
-        JSON.stringify(scholar.getValues())
+        JSON.stringify(insertData)
     );
-    dbRef.add(scholar.getValues());
+    promiseArray.push(dbRef.add(insertData));
   });
+  const result = await Promise.all(promiseArray);
+  return result;
 };
 
 export {createHistoricData, getHistoric};

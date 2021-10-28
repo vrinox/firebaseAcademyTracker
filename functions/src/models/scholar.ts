@@ -62,7 +62,7 @@ export class Scholar {
     let monthAcumulated = this.calculateMonthAcc(today, oldData.monthSLP);
     let weekAccumulated = this.calculateWeekAcc(today, oldData.weekSLP);
 
-    this.tempYesterday = oldData.todaySLP;
+    this.tempYesterday = oldData.yesterdaySLP;
     this.todaySLP = 0;
     this.yesterdaySLP = today;
     this.monthSLP = monthAcumulated;
@@ -77,9 +77,9 @@ export class Scholar {
     this.totalSLP = newData.totalSLP;
 
     console.log(`[SCHOLAR] ${this.name} [dia]: ${today}slp, [semana]: ${weekAccumulated}slp [mes]: ${monthAcumulated}slp [old-inGame] ${oldData.inGameSLP} [new-inGame] ${newData.inGameSLP}`);
-    console.log(`${moment().format('DD/MM/YYYY')}[SCHOLAR][OLD] ${this.name}`, JSON.stringify(oldData));
-    console.log(`${moment().format('DD/MM/YYYY')}[SCHOLAR][NEW] ${this.name}`, JSON.stringify(newData));
-    console.log(`${moment().format('DD/MM/YYYY')}[SCHOLAR][RESULT] ${this.name}`, JSON.stringify(this.getValues()));
+    // console.log(`${moment().format('DD/MM/YYYY')}[SCHOLAR][OLD] ${this.name}`, JSON.stringify(oldData));
+    // console.log(`${moment().format('DD/MM/YYYY')}[SCHOLAR][NEW] ${this.name}`, JSON.stringify(newData));
+    // console.log(`${moment().format('DD/MM/YYYY')}[SCHOLAR][RESULT] ${this.name}`, JSON.stringify(this.getValues()));
   }
   getDaysDiffStartOf(valor: any): number {
     const startOfTheMonth = moment().startOf(valor);
